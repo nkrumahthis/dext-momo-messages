@@ -17,9 +17,10 @@ public class SMSReceiver extends BroadcastReceiver {
             if(intentExtras != null){
                 Object[] sms = (Object[]) intentExtras.get(SMS_BUNDLE);
                 String smsMessageStr = "";
+                String smsBody="";
                 for(int i=0; i<sms.length; i++){
                     SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) sms[i]);
-                    String smsBody = smsMessage.getMessageBody();
+                    smsBody = smsMessage.getMessageBody();
                     String address = smsMessage.getOriginatingAddress();
 
                     smsMessageStr += "SMS From: " + address + "\n";
@@ -30,7 +31,7 @@ public class SMSReceiver extends BroadcastReceiver {
                 //this will update the UI with message
 
                 MainActivity inst = MainActivity.instance();
-                inst.updateList(smsMessageStr);
+                inst.updateList(new Message(smsBody));
             }
         }
     }

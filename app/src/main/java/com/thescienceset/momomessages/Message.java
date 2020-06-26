@@ -1,5 +1,7 @@
 package com.thescienceset.momomessages;
 
+import java.util.StringTokenizer;
+
 public class Message {
     String type;
     Double amount;
@@ -8,7 +10,6 @@ public class Message {
     String date;
 
     String body;
-    String address;
 
     public static final String SENT = "Sent";
     public static final String TRANSFER = "Transfer";
@@ -22,11 +23,47 @@ public class Message {
     public static final String INTEREST = "Interest";
     public static final String SPECIAL = "Special";
 
+    public void parse(String body){
+
+    }
+
+    public Message(String body){
+        if(body.startsWith("Payment made for")){
+            type = Message.SENT;
+        } else if (body.startsWith("Transfer of")){
+            type = Message.TRANSFER;
+        } else if (body.startsWith("Payment received for")){
+            type = Message.IN;
+        } else if (body.startsWith("Cash Out made for")){
+            type = Message.CASHOUT;
+        } else if (body.startsWith("Cash In received for")){
+            type = Message.CASHIN;
+        } else if (body.startsWith("Payment for")) {
+            type = Message.PAYMENTFOR;
+        }else if (body.startsWith("Your payment of")){
+            type = Message.PAYMENT;
+        }else if (body.startsWith("Y'ello. You have Paid")){
+            type = Message.MOMOPAYCONFIRMATION;
+        }else if (body.startsWith("An amount of")){
+            type = Message.INTEREST;
+        } else {
+            type = Message.SPECIAL;
+        }
+
+        StringTokenizer tokenizer  = new StringTokenizer(body, ".");
+        String token = tokenizer.nextToken().trim();
+
+        Message message = new Message(type, 0.0,"","");
+        message.setBody(body);
+    }
+
     public Message(String type, Double amount, String name, String reference) {
         this.type = type;
         this.amount = amount;
         this.name = name;
         this.reference = reference;
+
+
     }
 
     public String getType() {
@@ -67,14 +104,6 @@ public class Message {
 
     public String getBody(){
         return body;
-    }
-
-    public void setAddress(String address){
-        this.address = address;
-    }
-
-    public String getAddress(){
-        return address;
     }
 
     public void setDate(String date){
