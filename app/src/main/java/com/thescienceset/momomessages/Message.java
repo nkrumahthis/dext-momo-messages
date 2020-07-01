@@ -17,18 +17,6 @@ public class Message {
     String body;
     String address;
 
-    public static final String SENT = "Sent";
-    public static final String TRANSFER = "Transfer";
-    public static final String IN = "In";
-    public static final String CASHOUT = "Cash out";
-    public static final String CASHIN = "Cash In";
-    public static final String PAYMENT = "Payment";
-    public static final String PAYMENTFOR = "Payment For";
-    public static final String MOMOPAY = "MomoPay";
-    public static final String MOMOPAYCONFIRMATION = "Momo Pay Confirmation";
-    public static final String INTEREST = "Interest";
-    public static final String SPECIAL = "Special";
-
     public static ArrayList<Message> getMessages(ContentResolver resolver){
 
         ArrayList<Message> messages = new ArrayList<>();
@@ -77,26 +65,38 @@ public class Message {
     private static String parseType(String body){
         String type ="";
 
+        final String SENT = "Sent";
+        final String TRANSFER = "Transfer";
+        final String IN = "In";
+        final String CASHOUT = "Cash out";
+        final String CASHIN = "Cash In";
+        final String PAYMENT = "Payment";
+        final String PAYMENTFOR = "Payment For";
+        final String MOMOPAY = "MomoPay";
+        final String MOMOPAYCONFIRMATION = "Momo Pay Confirmation";
+        final String INTEREST = "Interest";
+        final String SPECIAL = "Special";
+
         if(body.startsWith("Payment made for")){
-            type = Message.SENT;
+            type = SENT;
         } else if (body.startsWith("Transfer of")){
-            type = Message.TRANSFER;
+            type = TRANSFER;
         } else if (body.startsWith("Payment received for")){
-            type = Message.IN;
+            type = IN;
         } else if (body.startsWith("Cash Out made for")){
-            type = Message.CASHOUT;
+            type = CASHOUT;
         } else if (body.startsWith("Cash In received for")){
-            type = Message.CASHIN;
+            type = CASHIN;
         } else if (body.startsWith("Payment for")) {
-            type = Message.PAYMENTFOR;
+            type = PAYMENTFOR;
         }else if (body.startsWith("Your payment of")){
-            type = Message.PAYMENT;
+            type = PAYMENT;
         }else if (body.startsWith("Y'ello. You have Paid")){
-            type = Message.MOMOPAYCONFIRMATION;
+            type = MOMOPAYCONFIRMATION;
         }else if (body.startsWith("An amount of")){
-            type = Message.INTEREST;
+            type = INTEREST;
         } else {
-            type = Message.SPECIAL;
+            type = SPECIAL;
         }
 
         return type;
