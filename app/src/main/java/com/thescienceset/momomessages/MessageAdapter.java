@@ -23,6 +23,7 @@ public class MessageAdapter extends ArrayAdapter<Message> {
         super(context, R.layout.row_item, data);
         this.dataSet = data;
         this.mContext = context;
+
     }
 
     private static class ViewHolder{

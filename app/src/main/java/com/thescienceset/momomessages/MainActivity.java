@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     ListView smsListView;
     ArrayAdapter arrayAdapter;
 
+
     public static MainActivity instance(){
         return inst;
     }
@@ -40,9 +41,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         smsListView = (ListView) findViewById(R.id.smslist);
-        arrayAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, smsMessagesList);
-        smsListView.setAdapter(arrayAdapter);
+
+
+
+
+
+        //set up the adapter
+//        arrayAdapter = new ArrayAdapter<String>(this,
+//                android.R.layout.simple_list_item_1, smsMessagesList);
+//        smsListView.setAdapter(arrayAdapter);
+
+
 
         //add sms read permission at runtime
         //todo: if permission is not granted
@@ -50,32 +59,43 @@ public class MainActivity extends AppCompatActivity {
         if(ContextCompat.checkSelfPermission(getBaseContext(),
                 "android.permission.READ_SMS") == PackageManager.PERMISSION_GRANTED){
             //todo if permission is granted then show sms
-            refreshSMSInbox();
+            ArrayList<Message> messageList = Message.getMessages(getContentResolver());
+            MessageAdapter messageAdapter = new MessageAdapter(messageList, this);
+            smsListView.setAdapter(messageAdapter);
         } else {
             //then set permission
             final int REQUEST_CODE_ASK_PERMISSIONS = 123;
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[] {"android.permission.READ_SMS"}, REQUEST_CODE_ASK_PERMISSIONS);
         }
+
     }
 
     public void refreshSMSInbox(){
+        //set up sms content resolver
+        //this provides access to the sms inbox
         ContentResolver contentResolver = getContentResolver();
-        Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"),
+        Uri uriSms = Uri.parse("content://sms/inbox");
+        Cursor smsInboxCursor = contentResolver.query(uriSms,
                 null, null, null, null);
-        int indexBody = smsInboxCursor.getColumnIndex("body");
-        int indexAddress = smsInboxCursor.getColumnIndex("address");
-        if(indexBody < 0 || !smsInboxCursor.moveToFirst()) return;
-        arrayAdapter.clear();
+        //this cursor contains the result set of the query made against the content resolver
+
+        //pick out info based on columns
+
+        int indexBody = smsInboxCursor.getColumnIndex("body"); //get body's column index
+        int indexAddress = smsInboxCursor.getColumnIndex("address"); //get address' column index
+        if(indexBody < 0 || !smsInboxCursor.moveToFirst()) return; //if there are not sms-es, abort
+        arrayAdapter.clear(); //clear adapter
+
         do{
-            //filter for sms from mobilemoney
+            //get string at cursor's row at the address column
             String smsAddress = smsInboxCursor.getString(indexAddress);
             String smsBody = smsInboxCursor.getString(indexBody);
 
             String type, name, amount, reference;
 
+            //filter for sms from mobilemoney
             if(smsAddress.equals("MobileMoney")){
-                
 
                 if(smsBody.startsWith("Payment made for")){
                     type = Message.SENT;
@@ -102,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 StringTokenizer tokenizer  = new StringTokenizer(smsBody, ".");
                 String token = tokenizer.nextToken().trim();
 
-                Message message = new Message(type, 0.0,"","");
+                Message message = new Message(type, 0.0,"","","");
                 message.setBody(smsBody);
                 message.setAddress(smsAddress);
 //
