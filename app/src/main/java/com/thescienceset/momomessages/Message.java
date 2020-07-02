@@ -77,7 +77,7 @@ public class Message {
                 String reference = parseReference(smsBody);
                 Date date = new Date(smsDate);
 
-                Message message = new Message(type, amount,name + no,reference, date);
+                Message message = new Message(type, amount,name,reference, date);
 
                 messages.add(message);
             }
@@ -117,7 +117,28 @@ public class Message {
     }
 
     private static String parseName(String body){
-        return "Asomasi Obenteng";
+        String name="";
+
+        if(parseType(body).equals(SENT)){
+            int beginIndex = body.indexOf("to") + 3;
+            int endIndex = body.indexOf(")")+1;
+            name = body.substring(beginIndex, endIndex);
+
+        } else if (parseType(body).equals(CASHOUT)){
+            int beginIndex = body.indexOf("to") + 3;
+            int endIndex = body.indexOf("Current") - 2;
+            name = body.substring(beginIndex, endIndex);
+        } else if (parseType(body).equals(IN)){
+            int beginIndex = body.indexOf("from") + 5;
+            int endIndex = body.indexOf("Current") - 1;
+            name = body.substring(beginIndex, endIndex);
+        } else if (parseType(body).equals(CASHIN)){
+            int beginIndex = body.indexOf("from") + 5;
+            int endIndex = body.indexOf("Current") - 2;
+            name = body.substring(beginIndex, endIndex);
+        }
+
+        return name;
     }
 
     private static double parseAmount(String body){
@@ -145,11 +166,6 @@ public class Message {
         }
 
         return amount;
-    }
-
-    //change from String to Date format
-    private static String parseDate(String body){
-        return "th June 2020";
     }
 
     private static String parseReference(String body){
