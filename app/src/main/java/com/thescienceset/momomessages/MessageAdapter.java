@@ -9,7 +9,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -68,8 +67,8 @@ public class MessageAdapter extends ArrayAdapter<Message> {
 
         viewHolder.tvReference.setText(message.getReference());
         viewHolder.tvName.setText(message.getName());
-        viewHolder.tvDate.setText(message.getDate());
-        viewHolder.tvAmount.setText(message.getAmount().toString());
+        viewHolder.tvDate.setText(message.getDateString());
+        viewHolder.tvAmount.setText(Double.toString(message.getAmount()));
         viewHolder.tvType.setText(message.getType());
 
         return convertView;

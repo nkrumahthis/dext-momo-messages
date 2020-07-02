@@ -4,18 +4,41 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.StringTokenizer;
+import java.util.Date;
 
 public class Message {
     String type;
-    Double amount;
+    double amount;
     String name;
     String reference;
-    String date;
+    Date date;
 
     String body;
     String address;
+
+    final static String SENT = "Sent";
+    final static String TRANSFER = "Transfer";
+    final static String IN = "In";
+    final static String CASHOUT = "Cash out";
+    final static String CASHIN = "Cash In";
+    final static String PAYMENT = "Payment";
+    final static String PAYMENTFOR = "Payment For";
+    final static String MOMOPAY = "MomoPay";
+    final static String MOMOPAYCONFIRMATION = "Momo Pay Confirmation";
+    final static String INTEREST = "Interest";
+    final static String SPECIAL = "Special";
+
+    public Message(String type, double amount, String name, String reference, Date date) {
+        this.type = type;
+        this.amount = amount;
+        this.name = name;
+        this.reference = reference;
+        this.date = date;
+    }
 
     public static ArrayList<Message> getMessages(ContentResolver resolver){
 
@@ -32,6 +55,7 @@ public class Message {
         //pick out info based on columns
         int indexBody = smsInboxCursor.getColumnIndex("body"); //get body's column index
         int indexAddress = smsInboxCursor.getColumnIndex("address"); //get address' column index
+        int indexDate = smsInboxCursor.getColumnIndex("date");
         if(indexBody < 0 || !smsInboxCursor.moveToFirst()) return messages; //if there are not sms-es, abort
 
         int no = 0;
@@ -41,6 +65,8 @@ public class Message {
             //get string at cursor's row at the address column
             String smsAddress = smsInboxCursor.getString(indexAddress);
             String smsBody = smsInboxCursor.getString(indexBody);
+            long smsDate = smsInboxCursor.getLong(indexDate);
+
 
             //filter for sms from mobilemoney
             if(smsAddress.equals("MobileMoney")){
@@ -49,9 +75,9 @@ public class Message {
                 String name = parseName(smsBody);
                 double amount = parseAmount(smsBody);
                 String reference = parseReference(smsBody);
-                String date = parseDate(smsBody);
+                Date date = new Date(smsDate);
 
-                Message message = new Message(type, amount,name + no,reference + no, no + date);
+                Message message = new Message(type, amount,name + no,reference, date);
 
                 messages.add(message);
             }
@@ -64,18 +90,6 @@ public class Message {
 
     private static String parseType(String body){
         String type ="";
-
-        final String SENT = "Sent";
-        final String TRANSFER = "Transfer";
-        final String IN = "In";
-        final String CASHOUT = "Cash out";
-        final String CASHIN = "Cash In";
-        final String PAYMENT = "Payment";
-        final String PAYMENTFOR = "Payment For";
-        final String MOMOPAY = "MomoPay";
-        final String MOMOPAYCONFIRMATION = "Momo Pay Confirmation";
-        final String INTEREST = "Interest";
-        final String SPECIAL = "Special";
 
         if(body.startsWith("Payment made for")){
             type = SENT;
@@ -107,7 +121,30 @@ public class Message {
     }
 
     private static double parseAmount(String body){
-        return 100.0;
+        String[] tokens = body.split(" ");
+        String strAmount = "";
+        double amount = 0.0;
+
+        for (int i=0; i<tokens.length; i++){
+            String token = tokens[i];
+            if(token.equals("GHS")){
+                strAmount = tokens[i+1];
+                break;
+            }
+            else if (token.startsWith("GHS")){
+                strAmount = token.substring(3);
+                break;
+            }
+        }
+
+        try{
+            amount = Double.valueOf(strAmount);
+        } catch (Exception ex){
+            //handle error
+
+        }
+
+        return amount;
     }
 
     //change from String to Date format
@@ -116,15 +153,18 @@ public class Message {
     }
 
     private static String parseReference(String body){
-        return "Small reference name goes here";
-    }
+        String[] tokens = body.split("\\.");
+        String reference = "";
 
-    public Message(String type, Double amount, String name, String reference, String date) {
-        this.type = type;
-        this.amount = amount;
-        this.name = name;
-        this.reference = reference;
-        this.date = date;
+        for(int i=0; i<tokens.length; i++){
+            String token = tokens[i];
+            if(token.startsWith(" Reference")){
+                reference = token.substring(11);
+                break;
+            }
+        }
+
+        return reference;
     }
 
     public String getType() {
@@ -135,11 +175,11 @@ public class Message {
         this.type = type;
     }
 
-    public Double getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 
@@ -175,12 +215,17 @@ public class Message {
         return address;
     }
 
-    public void setDate(String date){
+    public void setDate(Date date){
         this.date = date;
     }
 
-    public String getDate(){
+    public Date getDate(){
         return date;
+    }
+
+    public String getDateString(){
+        DateFormat dateFormat = new SimpleDateFormat("E, dd-M-Y hh:mm");
+        return(dateFormat.format(getDate()));
     }
 
     public String toString(){

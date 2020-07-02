@@ -1,22 +1,14 @@
 package com.thescienceset.momomessages;
 
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.widget.ListView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import android.content.ContentResolver;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
-
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 public class MainActivity extends AppCompatActivity {
 
