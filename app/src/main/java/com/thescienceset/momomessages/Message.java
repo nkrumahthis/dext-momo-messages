@@ -31,6 +31,8 @@ public class Message {
     final static String MOMOPAYCONFIRMATION = "Momo Pay Confirmation";
     final static String INTEREST = "Interest";
     final static String SPECIAL = "Special";
+    final static String AIRTIME = "Airtime";
+
 
     public Message(String type, double amount, String name, String reference, Date date) {
         this.type = type;
@@ -72,14 +74,14 @@ public class Message {
             if(smsAddress.equals("MobileMoney")){
 
                 String type = parseType(smsBody);
+                if(type.equals(MOMOPAYCONFIRMATION)) continue;
                 String name = parseName(smsBody);
                 double amount = parseAmount(smsBody);
                 String reference = parseReference(smsBody);
                 Date date = new Date(smsDate);
 
                 Message message = new Message(type, amount,name,reference, date);
-
-                messages.add(message);
+                if(message.getType() != Message.SPECIAL && message.getAmount() != 0.0) messages.add(message);
             }
 
         } while (smsInboxCursor.moveToNext());
@@ -109,6 +111,8 @@ public class Message {
             type = MOMOPAYCONFIRMATION;
         }else if (body.startsWith("An amount of")){
             type = INTEREST;
+        }else if (body.startsWith("Airtime recharged")){
+            type = AIRTIME;
         } else {
             type = SPECIAL;
         }
@@ -118,25 +122,47 @@ public class Message {
 
     private static String parseName(String body){
         String name="";
+        int beginIndex;
+        int endIndex;
 
         if(parseType(body).equals(SENT)){
-            int beginIndex = body.indexOf("to") + 3;
-            int endIndex = body.indexOf(")")+1;
+            beginIndex = body.indexOf("to") + 3;
+            endIndex = body.indexOf(")")+1;
             name = body.substring(beginIndex, endIndex);
-
+            if(name.startsWith("-")) name.substring(2);
         } else if (parseType(body).equals(CASHOUT)){
-            int beginIndex = body.indexOf("to") + 3;
-            int endIndex = body.indexOf("Current") - 2;
+            beginIndex = body.indexOf("to") + 3;
+            endIndex = body.indexOf("Current") - 2;
             name = body.substring(beginIndex, endIndex);
         } else if (parseType(body).equals(IN)){
-            int beginIndex = body.indexOf("from") + 5;
-            int endIndex = body.indexOf("Current") - 1;
+            beginIndex = body.indexOf("from") + 5;
+            endIndex = body.indexOf("Current") - 1;
             name = body.substring(beginIndex, endIndex);
         } else if (parseType(body).equals(CASHIN)){
-            int beginIndex = body.indexOf("from") + 5;
-            int endIndex = body.indexOf("Current") - 2;
+            beginIndex = body.indexOf("from") + 5;
+            endIndex = body.indexOf("Current") - 2;
             name = body.substring(beginIndex, endIndex);
+        } else if (parseType(body).equals(MOMOPAY)){
+            beginIndex = body.indexOf("to") + 1;
+            endIndex = body.indexOf("Current") - 3;
+            name = body.substring(beginIndex, endIndex);
+        }else if (parseType(body).equals(PAYMENTFOR)){
+            beginIndex = body.indexOf("to") + 3;
+            endIndex = body.indexOf("Current") - 2;
+            name = body.substring(beginIndex, endIndex);
+        } else if (parseType(body).equals(PAYMENT)) {
+            beginIndex = body.indexOf("to") + 3;
+            endIndex = body.indexOf("has") - 1;
+            name = body.substring(beginIndex, endIndex);
+        } else if (parseType(body).equals(AIRTIME)){
+            name = "Airtime";
+        } else if (parseType(body).equals(TRANSFER)) {
+            beginIndex = body.indexOf("to");
+
+            name = body.substring(beginIndex, beginIndex + 10);
         }
+
+        //TODO: parse names for MOMOPAY, PAYMENT, PAYMENTTO, etc
 
         return name;
     }
